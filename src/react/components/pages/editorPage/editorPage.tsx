@@ -31,6 +31,7 @@ import Alert from "../../common/alert/alert";
 import Confirm from "../../common/confirm/confirm";
 import { ActiveLearningService } from "../../../../services/activeLearningService";
 import { toast } from "react-toastify";
+import Modal from 'react-modal';
 
 /**
  * Properties for Editor Page
@@ -78,6 +79,8 @@ export interface IEditorPageState {
     isValid: boolean;
     /** Whether the show invalid region warning alert should display */
     showInvalidRegionWarning: boolean;
+    displayingEnumGenerateModal: boolean;
+    generatedEnumValue: string;
 }
 
 function mapStateToProps(state: IApplicationState) {
@@ -115,6 +118,8 @@ export default class EditorPage extends React.Component<IEditorPageProps, IEdito
         thumbnailSize: this.props.appSettings.thumbnailSize || { width: 175, height: 155 },
         isValid: true,
         showInvalidRegionWarning: false,
+        displayingEnumGenerateModal: false,
+        generatedEnumValue: "",
     };
 
     private activeLearningService: ActiveLearningService = null;
@@ -266,6 +271,22 @@ export default class EditorPage extends React.Component<IEditorPageProps, IEdito
                     message={strings.editorPage.messages.enforceTaggedRegions.description}
                     closeButtonColor="info"
                     onClose={() => this.setState({ showInvalidRegionWarning: false })} />
+                    <Modal
+                        className="modal-popup"
+                       isOpen={this.state.displayingEnumGenerateModal}
+                       onRequestClose={this.handleEnumGenerateModalClose.bind(this)}
+                       contentLabel="Minimal Modal Example"
+                    >
+                      <div>
+                        <br />
+                        <div>
+                          <label>Generated Enum Info : </label>
+                          <textarea style={{width : '300px', height : '550px'}}
+                            value={this.state.generatedEnumValue}
+                          />
+                        </div>
+                      </div>
+                    </Modal>
             </div>
         );
     }
@@ -561,7 +582,103 @@ export default class EditorPage extends React.Component<IEditorPageProps, IEdito
             case ToolbarItemName.ActiveLearning:
                 await this.predictRegions();
                 break;
+            case ToolbarItemName.GenerateOCRConfigForRegions:
+                await this.generateOCRConfigForRegions();
+                break;
+
         }
+    }
+
+    /**
+     * Navigates to the previous / next root asset on the sidebar
+     * @param direction Number specifying asset navigation
+     */
+    private generateOCRConfigForRegions = async () => {
+      // generate enum, then set state
+      var enumValue = "Cameljacks";
+      const selectedRegionsForEnum = this.canvas.current.getSelectedRegions();
+      const fullConstruction = [];
+      const fullConstructionDict = [];
+
+
+const OCR_CONFIG_BASE =`
+{
+    "rects": [
+`
+
+const OCR_CONFIG_BASE_DICT =`
+{
+    "rects": {
+`
+
+const OCR_CONFIG_END =`
+    ],
+    "ocr_config": {
+        "always_use_list": True,
+        "language_configs": [
+            {
+                "language": "eng",
+                "use_easy_orc": False,
+                "invert": False,
+                "psm7": False,
+            }
+        ]
+    }
+}`
+
+const OCR_CONFIG_END_DICT =`
+    },
+    "ocr_config": {
+        "always_use_list": True,
+        "language_configs": [
+            {
+                "language": "eng",
+                "use_easy_orc": False,
+                "invert": False,
+                "psm7": False,
+            }
+        ]
+    }
+}`
+fullConstruction.push(OCR_CONFIG_BASE);
+fullConstructionDict.push(OCR_CONFIG_BASE_DICT);
+
+      var num = 0;
+      for (const selectedRegion of selectedRegionsForEnum) {
+//          selectedRegion.tags = CanvasHelpers.addAllIfMissing(selectedRegion.tags, this.props.lockedTags);
+        const bounds = selectedRegion.boundingBox;
+        const x1 = Math.round(bounds.left);
+        const y1 = Math.round(bounds.top);
+        const x2 = Math.round(bounds.left + bounds.width);
+        const y2 = Math.round(bounds.top + bounds.height);
+
+const ENUM_JSON_ITEM_TEMPLATE =`
+            [${x1}, ${y1}, ${x2}, ${y2}],`
+
+const ENUM_JSON_ITEM_TEMPLATE_DICT =`
+            {"${num}": [${x1}, ${y1}, ${x2}, ${y2}]},`
+
+
+            fullConstruction.push(ENUM_JSON_ITEM_TEMPLATE);
+            fullConstructionDict.push(ENUM_JSON_ITEM_TEMPLATE_DICT);
+
+            num += 1;
+      }
+      fullConstruction.push(OCR_CONFIG_END);
+      fullConstructionDict.push(OCR_CONFIG_END_DICT);
+
+      enumValue = fullConstruction.join("");
+      enumValue += "\n";
+      enumValue += fullConstructionDict.join("");
+
+      this.setState({
+        generatedEnumValue: enumValue,
+      }, function () {
+        this.setState({
+          displayingEnumGenerateModal: true
+        })
+      });
+
     }
 
     private predictRegions = async (canvas?: HTMLCanvasElement) => {
@@ -694,5 +811,11 @@ export default class EditorPage extends React.Component<IEditorPageProps, IEdito
         });
 
         this.setState({ assets: updatedAssets });
+    }
+
+    private handleEnumGenerateModalClose(){
+      this.setState({
+        displayingEnumGenerateModal: false
+      })
     }
 }

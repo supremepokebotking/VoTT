@@ -284,6 +284,7 @@ export const korean: IAppStrings = {
             saveProject: "프로젝트 저장", // Save Project,
             exportProject: "프로젝트 내보내기",  // Export Project,
             activeLearning: "Active Learning",  // Active Learning"
+            generateOCRConfigForRegions: "Generate Ocr Config For Selected Regions",
         },
         videoPlayer: {
             previousTaggedFrame: {

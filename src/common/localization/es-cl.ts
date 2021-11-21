@@ -278,6 +278,7 @@ export const spanish: IAppStrings = {
             saveProject: "Guardar Proyecto",
             exportProject: "Exprtar Proyecto",
             activeLearning: "Aprendizaje Activo",
+            generateOCRConfigForRegions: "Generate Ocr Config For Selected Regions",
         },
         videoPlayer: {
             previousTaggedFrame: {

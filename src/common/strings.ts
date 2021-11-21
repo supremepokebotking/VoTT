@@ -279,6 +279,7 @@ export interface IAppStrings {
             saveProject: string;
             exportProject: string;
             activeLearning: string;
+            generateOCRConfigForRegions: string;
         }
         videoPlayer: {
             nextTaggedFrame: {

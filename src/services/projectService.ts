@@ -32,7 +32,7 @@ const defaultActiveLearningSettings: IActiveLearningSettings = {
 };
 
 const defaultExportOptions: IExportFormat = {
-    providerType: "vottJson",
+    providerType: "csv",
     providerOptions: {
         assetState: ExportAssetState.Visited,
         includeImages: true,

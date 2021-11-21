@@ -18,12 +18,14 @@ export enum ToolbarItemName {
     SaveProject = "saveProject",
     ExportProject = "exportProject",
     ActiveLearning = "activeLearning",
+    GenerateOCRConfigForRegions = "GenerateOCRConfigForRegions",
 }
 
 export enum ToolbarItemGroup {
     Canvas = "canvas",
     Regions = "regions",
     Navigation = "navigation",
+    RegionModification = "regionmodification",
     Project = "project",
 }
 
@@ -147,4 +149,13 @@ export default function registerToolbar() {
         type: ToolbarItemType.Action,
         accelerators: ["CmdOrCtrl+E", "CmdOrCtrl+e"],
     }, ExportProject);
+
+    ToolbarItemFactory.register({
+        name: ToolbarItemName.GenerateOCRConfigForRegions,
+        tooltip: strings.editorPage.toolbar.generateOCRConfigForRegions,
+        icon: "fa-solid fa-codepen",
+        group: ToolbarItemGroup.RegionModification,
+        type: ToolbarItemType.Action,
+        accelerators: ["CmdOrCtrl+M", "CmdOrCtrl+m"],
+    });
 }
